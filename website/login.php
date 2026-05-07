@@ -8,12 +8,6 @@
         exit;
     }
 
-    // ========== CSRF TOKEN GENERATION ==========
-    // Create a CSRF token if one doesn't exist in the session
-    if (!isset($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));  // Generate 64-character random token
-    }
-
     $error = '';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -24,19 +18,32 @@
             $error = 'Invalid request. Please try again.';
         } else {
             
-            $email = trim($_POST['email'] ?? '');
-            $phone = trim($_POST['phone'] ?? '');
+            // Get and trim user inputs
+            $email    = trim($_POST['email'] ?? '');
+            $phone    = trim($_POST['phone'] ?? '');
+            $password = $_POST['password'] ?? '';  // Don't trim password (spaces matter)
             
-            $user = authenticate($pdo, $email, $phone);
-
-            if ($user) {
-                login($user);
-                // Regenerate session ID to prevent session fixation attacks
-                session_regenerate_id(true);
-                header('Location: index.php');
-                exit;
+            // Validate that all fields are provided
+            if (!$email || !$phone || !$password) {
+                $error = 'All fields are required.';
             } else {
-                $error = 'Invalid email or phone number.';
+                // Authenticate with all three credentials
+                $user = authenticate($pdo, $email, $phone, $password);
+
+                if ($user) {
+                    // Authentication successful - create session
+                    login($user);
+                    
+                    // Regenerate session ID to prevent session fixation attacks
+                    session_regenerate_id(true);
+                    
+                    // Redirect to dashboard
+                    header('Location: index.php');
+                    exit;
+                } else {
+                    // Authentication failed - use generic message (don't reveal which credential was wrong)
+                    $error = 'Invalid email, phone number, or password.';
+                }
             }
         }
     }
@@ -54,7 +61,6 @@
         </div>
     <?php endif; ?>
 
-
     <form method="POST" action="login.php" class="login-form">
 
         <!-- ========== CSRF TOKEN FIELD ========== -->
@@ -70,10 +76,17 @@
 
         <div class="form-group">
             <label for="phone">Phone Number:</label>
-            <!-- Changed from type="password" to type="tel" since this is a phone number, not a password -->
+            <!-- Changed from type="password" to type="tel" since this is a phone number -->
             <input type="tel" id="phone" name="phone"
                    value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>"
-                   placeholder="123456789" required>
+                   placeholder="1234567890" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <!-- Password field - note: we don't preserve value for security reasons -->
+            <input type="password" id="password" name="password"
+                   placeholder="••••••••" required>
         </div>
 
         <div class="form-group">
@@ -84,3 +97,4 @@
 </div>
 
 <?php require_once 'includes/footer.php'; ?>
+
