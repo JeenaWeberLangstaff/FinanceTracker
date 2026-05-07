@@ -1,6 +1,6 @@
 
                     FINANCE TRACKER DATABASE APPLICATION
-                              README
+
 
 
 PROJECT OVERVIEW
