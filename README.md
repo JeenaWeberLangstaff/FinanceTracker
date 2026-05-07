@@ -1,1129 +1,865 @@
-
-                    FINANCE TRACKER DATABASE APPLICATION
-
-
-
-PROJECT OVERVIEW
-
-
-Finance Tracker is a personal finance management web application that helps 
-users organize and track their financial information. The application stores 
-data about account holders, financial accounts, transactions, spending 
-categories, and payees or sources all in one centralized database. Users can 
-easily track income, expenses, account activity, and spending patterns without 
-connecting directly to real bank accounts.
-
-Live Application: https://ajibanez.rhody.dev/financetracker/login.php
-
-Institution: University of Rhode Island
-Course: CSC 436 - Database Management
-Project Date: May 2026
-
-
-KEY FEATURES
+================================================================================
+                    FINANCE TRACKER - STUDENT GUIDE
+                         How to Use This App
 ================================================================================
 
-CORE FUNCTIONALITY
-  - Multi-Account Management (Checking, Savings, Money Market accounts)
-  - Transaction Tracking (deposits and withdrawals with auto balance updates)
-  - Category Organization (10 predefined spending categories)
-  - Financial Dashboard (view balance, deposits, withdrawals, net position)
-  - Transaction History (browse complete records with search and filter)
-  - Smart Filtering (by type, category, account, or search terms)
-
-SECURITY FEATURES
-  - Three-Factor Authentication (email + phone number + password)
-  - SQL Injection Prevention (prepared statements with parameter binding)
-  - XSS Protection (HTML output encoding with htmlspecialchars())
-  - CSRF Protection (unique tokens for all form submissions)
-  - Password Security (bcrypt hashing with cost parameter 12)
-  - Session Management (server-side sessions with ID regeneration)
-  - Authorization Filtering (User_ID enforcement at database level)
-  - Input Validation (email format, password strength, duplicate prevention)
-
-PERFORMANCE & RELIABILITY
-  - Database Indexing (idx_account_date and idx_category optimized indexes)
-  - 3NF Normalization (clean, non-redundant data structure)
-  - Transaction Integrity (atomic operations for balance updates)
-
-
-TECHNOLOGY STACK
+WHAT IS FINANCE TRACKER?
 ================================================================================
 
-FRONTEND
-  - HTML5
-  - CSS3
-  - JavaScript
+Finance Tracker is an app that helps you keep track of your money. Think of it 
+like a digital notebook for recording every time you spend or receive money.
 
-BACKEND
-  - PHP 7.4 or higher
-  - PDO (PHP Data Objects) for database access
+Instead of writing everything down on paper, you use this app to:
+  - Log when you deposit money (money coming in)
+  - Log when you withdraw money (money going out)
+  - See how much money you have in each account
+  - Understand where your money is going
 
-DATABASE
-  - MySQL 5.7 or higher
+Live Website: https://ajibanez.rhody.dev/financetracker/login.php
 
-HOSTING & SERVER
-  - Hostgator cPanel
-  - Apache Web Server
+This is a class project for the University of Rhode Island's database course.
 
 
-DATABASE DESIGN
+WHY USE THIS APP?
 ================================================================================
 
-ENTITY-RELATIONSHIP DIAGRAM
+Before Finance Tracker:
+  - Your money is scattered across different banks
+  - You have to check multiple websites to see balances
+  - Hard to remember what you spent money on
+  - No easy way to see spending patterns
+  - Can't quickly answer "Where did my money go?"
 
-    Account_Holder (1) --owns--> (M) Account
-           |                           |
-           +--has----------------------+
-                                       |
-                              (N) Transaction
-                                       |
-              +--categorized_as--------+--------involves--+
-              |                                           |
-          Category                                  Payee/Source
-
-
-CORE TABLES
-
-Account_Holder
-  - User_ID (Primary Key, INT) - Main identifier, auto-increment
-  - First_Name (VARCHAR) - User's first name
-  - Last_Name (VARCHAR) - User's last name
-  - Email (VARCHAR, UNIQUE) - Email address, unique per account
-  - Phone_Number (VARCHAR, UNIQUE) - Phone number, unique per account
-  - Password_Hash (VARCHAR) - Bcrypt hashed password, never stored as plaintext
-
-Account
-  - Account_ID (Primary Key, INT) - Account identifier, auto-increment
-  - User_ID (Foreign Key) - Links to Account_Holder
-  - Bank_Name (VARCHAR) - Name of the bank or institution
-  - Account_Type (ENUM) - One of: Checking, Savings, Money Market
-  - Balance (DECIMAL(10,2)) - Current account balance in currency format
-
-Transaction
-  - Transaction_ID (Primary Key, INT) - Transaction identifier, auto-increment
-  - Account_ID (Foreign Key) - Links to Account
-  - Category_ID (Foreign Key) - Links to Category
-  - Pay_ID (Foreign Key) - Links to Payee/Source
-  - Date (DATE) - Transaction date (YYYY-MM-DD format)
-  - Amount (DECIMAL(10,2)) - Transaction amount as positive number
-  - Description (VARCHAR) - Transaction description or memo
-  - Transaction_Type (ENUM) - One of: Deposit, Withdrawal
-
-Category
-  - Category_ID (Primary Key, INT) - Category identifier, auto-increment
-  - Name (VARCHAR) - Category name (e.g., Salary, Groceries, Rent, Utilities)
-  - Type (ENUM) - One of: Income, Expense
-
-Payee/Source
-  - Pay_ID (Primary Key, INT) - Payee identifier, auto-increment
-  - Name (VARCHAR) - Name of store, company, or employer
+With Finance Tracker:
+  - See all accounts in one place
+  - Track every dollar you spend
+  - Know exactly where your money goes
+  - See spending patterns (What costs me the most?)
+  - Answer questions like "How much did I spend on groceries?"
 
 
-INSTALLATION & SETUP
+BEFORE YOU START - WHAT YOU NEED
 ================================================================================
 
-PREREQUISITES
+Before using Finance Tracker, have ready:
+  1. Your email address (any email is fine)
+  2. Your phone number
+  3. A password you'll remember (at least 8 characters)
+  4. Bank account information (optional - you can add later)
 
-Required:
-  - PHP 7.4 or higher with PDO MySQL support
-  - MySQL 5.7 or higher
-  - Apache web server
-  - cPanel hosting account (or similar Linux-based hosting)
-
-Optional:
-  - Git for repository cloning
-  - Command line access to MySQL
+That's it! You don't need anything else to get started.
 
 
-LOCAL SETUP INSTRUCTIONS
-
-Step 1: Clone the Repository
-  Command: git clone https://github.com/yourusername/finance-tracker.git
-  Command: cd finance-tracker
-
-Step 2: Configure Database Connection
-  - Locate file: includes/db.php
-  - Update with your database credentials:
-    $pdo = new PDO(
-        'mysql:host=YOUR_HOST;dbname=YOUR_DATABASE',
-        'YOUR_USERNAME',
-        'YOUR_PASSWORD'
-    );
-
-Step 3: Import Database Schema
-  Command: mysql -u username -p database_name < database/schema.sql
-  - When prompted, enter your MySQL password
-  - Wait for tables to be created
-
-Step 4: Create Password Hash Column (if upgrading existing system)
-  SQL: ALTER TABLE Account_Holder ADD COLUMN 
-       Password_Hash VARCHAR(255) NOT NULL DEFAULT '';
-  - Run this in MySQL console if column doesn't exist
-
-Step 5: Set File Permissions
-  Command: chmod 755 includes/
-  Command: chmod 644 includes/db.php
-  - Ensures proper read/write access to configuration
-
-Step 6: Access the Application
-  - Open login.php in your web browser
-  - Use test credentials from database/seed.sql if available
-  - Begin registering users and adding accounts
-
-
-CPANEL DEPLOYMENT
-
-Step 1: Prepare Deployment File
-  - Create .htaccess file for deployment automation
-  - Include necessary rewrite rules
-
-Step 2: Clone Repository
-  - Use cPanel Git Version Control
-  - Clone repository into public_html directory
-  - Branch: main
-
-Step 3: Configure Database
-  - Set database credentials in cPanel environment variables
-  - Or update includes/db.php with cPanel database info
-
-Step 4: Run Migrations
-  - Execute database schema import
-  - Verify all tables created successfully
-
-Step 5: Access Application
-  - Open https://yourdomain.com/financetracker/login.php
-  - Test login with sample credentials
-  - Verify all features working
-
-
-USAGE GUIDE
+GETTING STARTED - CREATE YOUR ACCOUNT
 ================================================================================
 
-REGISTRATION & LOGIN
-
-Create New Account:
-  1. Navigate to registration page (register.php)
-  2. Enter first name
-  3. Enter last name
-  4. Enter email address (must be unique)
-  5. Enter phone number (must be unique)
-  6. Create password (minimum 8 characters)
-  7. Confirm password matches
-  8. Click "Create Account" button
-  9. Redirected to login page
-
-Log In to Account:
-  1. Navigate to login page (login.php)
-  2. Enter email address
-  3. Enter phone number
-  4. Enter password
-  5. Click "Log In" button
-  6. All three credentials must be correct
-  7. Session created and stored on server
-
-
-DASHBOARD
-
-Upon login, you will see:
-
-Welcome Message:
-  - "Welcome back, [First_Name]!"
-  - Personalized greeting
-
-Summary Cards:
-  - Total Balance: Sum of all account balances
-  - Total Deposits: Sum of all deposit transactions
-  - Total Withdrawals: Sum of all withdrawal transactions
-  - Net Position: Total Deposits minus Total Withdrawals
-
-Transaction Table:
-  - Date: When transaction occurred
-  - Description: What the transaction was for
-  - Category: Type of transaction (Salary, Groceries, etc.)
-  - Payee/Source: Who you paid or received from
-  - Account: Which account transaction is in
-  - Type: Deposit (green) or Withdrawal (red)
-  - Amount: Dollar amount of transaction
-
-Filter & Search Options:
-  - Filter by Transaction Type (All, Deposits, Withdrawals)
-  - Filter by Category (All, or specific)
-  - Filter by Account (All, or specific)
-  - Search box for description or payee name
-
-
-MANAGING ACCOUNTS
-
-Add New Account:
-  1. Navigate to "Add Account" page
-  2. Enter bank name (e.g., "Chase", "Bank of America", "Wells Fargo")
-  3. Select account type from dropdown
-     - Checking
-     - Savings
-     - Money Market
-  4. Enter starting balance (in dollars)
-  5. Click "Add Account" button
-  6. New account appears in "Your Accounts" section
-
-View Accounts:
-  - "Your Accounts" section displays all linked accounts
-  - Shows: Bank name, Account type, Current balance
-  - Balance updates automatically when transactions added
-
-
-RECORDING TRANSACTIONS
-
-Add New Transaction:
-  1. Click "+ Add Transaction" button on dashboard
-  2. Select account to record transaction in
-  3. Set transaction date (defaults to today)
-  4. Enter amount (as positive number)
-  5. Select transaction type:
-     - Deposit: Money coming in
-     - Withdrawal: Money going out
-  6. Choose category from dropdown:
-     - Salary (income)
-     - Groceries (expense)
-     - Rent (expense)
-     - Utilities (expense)
-     - And 6 others
-  7. Select payee/source (employer, store, etc.)
-  8. Add optional description or memo
-  9. Click "Add Transaction" button
-  10. Account balance updates automatically
-  11. Transaction appears in history table
-
-View & Filter Transactions:
-  - All transactions appear in dashboard table
-  - Filter by multiple criteria:
-    * Transaction Type (Deposits, Withdrawals, All)
-    * Category (specific or all)
-    * Account (specific or all)
-    * Search term (description, payee name)
-  - Click on transaction for more details (if available)
-  - Transactions sorted by date (most recent first)
-
-
-LOGOUT
-
-End Your Session:
-  1. Click username dropdown in top-right corner
-  2. Select "Logout" from menu
-  3. Session ends immediately
-  4. Redirected to login page
-  5. Browser cookies cleared
-
-Session Timeout:
-  - Sessions automatically expire after 30 minutes of inactivity
-  - Must log in again to access dashboard
-  - All unsaved data preserved in database
-
-
-SECURITY DETAILS
-================================================================================
-
-AUTHENTICATION SYSTEM
-
-Three-Factor Authentication:
-  - Factor 1: Email address (unique identifier)
-  - Factor 2: Phone number (secondary identifier)
-  - Factor 3: Password (secret credential)
+Step 1: Go to the Website
+  - Open this link in your browser:
+    https://ajibanez.rhody.dev/financetracker/login.php
   
-  All three must match database records for login to succeed. Single error 
-  prevents access.
+  You'll see a login page with two buttons:
+    - "Log In" (if you already have an account)
+    - "Create Account" (if you're new)
 
-Password Hashing with Bcrypt:
-  - Algorithm: bcrypt (industry standard for passwords)
-  - Cost parameter: 12 (computational difficulty)
-  - Hash time: ~100 milliseconds per password
-  - Salt: Automatically generated and unique per password
-  - One-way encryption: Cannot be reversed even if database stolen
+Step 2: Click "Create Account" Button
+  - This takes you to the registration form
 
-  Why Bcrypt is Secure:
-    1. One-way encryption cannot be reversed to original password
-    2. Random salt prevents identical passwords producing same hash
-    3. High computational cost prevents brute-force attacks
-    4. Cost parameter can increase as computers get faster
+Step 3: Fill Out the Form
 
+  First Name:
+    - Type your first name
+    - Example: "Sarah"
+    - Just use your real first name
 
-SQL INJECTION PREVENTION
+  Last Name:
+    - Type your last name
+    - Example: "Johnson"
+    - Just use your real last name
 
-Threat: Malicious code inserted into user input to manipulate queries
+  Email:
+    - Type your email address
+    - Example: "sarah.johnson@email.com"
+    - This is how you'll log in
+    - Must be unique (no one else can use the same email)
+    - Make sure you type it correctly!
 
-Example Attack:
-  User enters: ' OR '1'='1
-  Unsafe query: SELECT * FROM users WHERE email = '' OR '1'='1'
-  Result: Returns all users (bypasses authentication)
+  Phone Number:
+    - Type your phone number
+    - Example: "401-555-1234"
+    - This is extra security for your account
+    - Must be unique (no one else can use the same number)
+    - Make sure you type it correctly!
 
-Our Defense: Prepared Statements with Parameter Binding
+  Password:
+    - Create a password (at least 8 characters)
+    - Example: "MyPassword123"
+    - Longer passwords are more secure
+    - Can include letters, numbers, and symbols
+    - IMPORTANT: Write this down somewhere safe!
 
-Code Example - SAFE:
-  $stmt = $pdo->prepare(
-      'SELECT * FROM Account_Holder WHERE Email = :email'
-  );
-  $stmt->execute([':email' => $email]);
+  Confirm Password:
+    - Type your password again
+    - Must match the password above
+    - If they don't match, you'll get an error
 
-Code Example - UNSAFE (never do this):
-  $query = "SELECT * FROM Account_Holder WHERE Email = '$email'";
+Step 4: Click "Create Account"
+  - If everything is correct, your account is created
+  - You'll be sent to the login page
 
-How It Works:
-  1. SQL structure sent to database first
-  2. User input sent separately as data
-  3. Database treats input as data only, never as code
-  4. Malicious code treated as literal string value
+Step 5: Log In With Your New Account
+  - Email: Type the email you just used
+  - Phone Number: Type the phone number you just used
+  - Password: Type the password you just created
+  - Click "Log In"
 
-
-XSS (CROSS-SITE SCRIPTING) PREVENTION
-
-Threat: Malicious JavaScript injected into web page and executed
-
-Example Attack:
-  User enters: <script>alert('hacked')</script>
-  In database: <img src=x onerror="stealData()">
-  Result: Browser executes JavaScript code
-
-Our Defense: Output Encoding with htmlspecialchars()
-
-Code Example - SAFE:
-  <p><?= htmlspecialchars($user_input) ?></p>
-  
-Code Example - UNSAFE (never do this):
-  <p><?= $user_input ?></p>
-
-How It Works:
-  - < becomes &lt;
-  - > becomes &gt;
-  - " becomes &quot;
-  - ' becomes &#039;
-  - Browser displays as text, not HTML
+Congratulations! You're in!
 
 
-CSRF (CROSS-SITE REQUEST FORGERY) PREVENTION
-
-Threat: Malicious website tricks user into submitting forms to our site
-
-Example Attack:
-  User logged in to Finance Tracker
-  User visits malicious-site.com
-  Malicious site submits hidden form to our application
-  Form transfers money or changes settings without user knowledge
-
-Our Defense: CSRF Tokens
-
-How It Works:
-  1. Each user session gets unique 64-character token
-  2. Token included in every form as hidden field
-  3. When form submitted, token must match session token
-  4. Malicious sites cannot guess random token
-  5. Request rejected if token missing or invalid
-
-Code Example - Token Generation:
-  if (!isset($_SESSION['csrf_token'])) {
-      $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-  }
-
-Code Example - Token in Form:
-  <input type="hidden" name="csrf_token" 
-         value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
-
-Code Example - Token Validation:
-  if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-      $error = 'Invalid request. Please try again.';
-  }
-
-
-AUTHORIZATION & ACCESS CONTROL
-
-Principle: Users can only access their own data
-
-Implementation: User_ID Filtering
-
-Every query includes WHERE clause restricting by User_ID:
-  
-  SELECT * FROM Transactions 
-  WHERE Account_ID IN (
-    SELECT Account_ID FROM Account WHERE User_ID = :uid
-  )
-
-Examples:
-  - User 5 can only see User 5's accounts
-  - User 5 can only see User 5's transactions
-  - User 5 cannot view, edit, or delete User 6's data
-  - Enforced at database level (cannot be bypassed)
-
-
-SESSION MANAGEMENT
-
-Server-Side Sessions:
-  - User data stored on server, not in browser
-  - More secure than browser cookies
-  - Session ID generated randomly
-  - Session ID changed after successful login
-  - Prevents session fixation attacks
-
-Session Data Stored:
-  - user_id: User's unique identifier
-  - first_name: User's first name
-  - last_name: User's last name
-  - email: User's email address
-  - csrf_token: CSRF protection token
-
-Session Data NOT Stored:
-  - Password (never)
-  - Password hash (never)
-  - Sensitive financial details
-  - Bank account numbers
-
-
-INPUT VALIDATION
-
-Registration Validation:
-  - All fields required (cannot be empty)
-  - Email format validation (must contain @)
-  - Email uniqueness check (no duplicates allowed)
-  - Phone number uniqueness check (no duplicates)
-  - Password length minimum 8 characters
-  - Password confirmation must match
-  - Phone number must be valid format
-
-Login Validation:
-  - Email and phone number required
-  - Password required
-  - Generic error message (doesn't reveal which failed)
-  - Prevents user enumeration attacks
-
-Transaction Validation:
-  - Amount required and must be positive number
-  - Category must exist in database
-  - Account must belong to logged-in user
-  - Date must be valid date format
-
-HTML5 Input Type Validation (Browser-side):
-  - type="email" validates email format
-  - type="tel" validates phone format
-  - type="password" hides character input
-  - minlength="8" enforces minimum length
-  - required attribute prevents submission if empty
-
-
-ERROR HANDLING & INFORMATION DISCLOSURE
-
-Generic Error Messages:
-  - Login: "Invalid email, phone number, or password."
-  - Registration: "An account with that email already exists."
-  - Never reveals which credential failed
-  - Prevents attackers from guessing valid emails
-
-Detailed Errors Not Shown to Users:
-  - Database connection errors
-  - SQL syntax errors
-  - File system errors
-  - Server-side exceptions
-  - Logged for debugging but not displayed
-
-
-SECURITY SUMMARY
-
-Defense-in-Depth Approach:
-
-Database Layer:
-  - Prepared statements prevent SQL injection
-  - Parameterized queries keep data separate from code
-  
-Application Layer:
-  - Input validation ensures valid data
-  - Output encoding prevents XSS attacks
-  - CSRF tokens prevent unauthorized form submissions
-  
-Authentication Layer:
-  - Three-factor authentication requires multiple credentials
-  - Bcrypt hashing protects passwords
-  - Session regeneration prevents fixation attacks
-  - Authorization filtering restricts data access
-
-
-KEY QUERIES & DATABASE OPERATIONS
+THE DASHBOARD - WHAT YOU SEE AFTER LOGIN
 ================================================================================
 
-USER AUTHENTICATION
+When you log in, you see the Dashboard. This is your home page. Let's break down
+what's on it:
 
-Query:
-  SELECT * FROM Account_Holder 
-  WHERE Email = :email AND Phone_number = :phone
+WELCOME MESSAGE (Top of Page)
+  "Welcome back, Sarah!"
+  - Shows your first name
+  - Just a friendly greeting
 
-Purpose:
-  - Verify user email and phone number exist
-  - Retrieve user record if both match
-  - Check password hash in application code
+FOUR SUMMARY CARDS (Big Boxes)
 
-Usage:
-  - Login form submits email and phone
-  - Query checks Account_Holder table
-  - If found, application verifies password
-  - If password matches hash, login succeeds
+  1. Total Balance
+     - How much money you have total across all accounts
+     - Example: $5,000.00
+     - This adds up all your accounts
 
+  2. Total Deposits
+     - How much money came IN
+     - Example: $7,000.00
+     - This is money you received or added
 
-DASHBOARD DEPOSIT TOTAL
+  3. Total Withdrawals
+     - How much money went OUT
+     - Example: $1,500.00
+     - This is money you spent or removed
 
-Query:
-  SELECT COALESCE(SUM(t.amount), 0) AS total, COUNT(*) AS cnt
-  FROM Transactions t
-  JOIN Account a ON t.Account_ID = a.Account_ID
-  WHERE a.User_ID = :uid AND t.transaction_type = "Deposit"
+  4. Net Position
+     - Deposits minus Withdrawals
+     - Example: $5,500.00
+     - This shows if you're saving money overall
 
-Purpose:
-  - Calculate sum of all user's deposits
-  - Count number of deposit transactions
-  - Display on dashboard summary card
+TRANSACTION TABLE (List Below Cards)
+  - Shows every transaction you recorded
+  - Lists: Date, What you bought, Category, Who you paid, Account, Amount
+  - Most recent transactions appear first
+  - Color-coded: Green for deposits, Red for withdrawals
 
-Components Explained:
-  - COALESCE: Returns 0 if no deposits (instead of NULL)
-  - SUM(t.amount): Adds up all transaction amounts
-  - COUNT(*): Counts how many transactions
-  - FROM Transactions t: Look in Transactions table (nicknamed "t")
-  - JOIN Account: Connect with Account table to verify ownership
-  - WHERE a.User_ID = :uid: Filter to only this user's data
-
-Similar Query for Withdrawals:
-  - Same structure but transaction_type = "Withdrawal"
-
-
-TRANSACTION HISTORY WITH JOINS
-
-Query:
-  SELECT t.Transaction_ID, t.date, t.amount, t.description, 
-         t.transaction_type, c.Name AS category_name, 
-         p.Name AS payee_name, a.Bank_name, a.Account_type
-  FROM Transactions t
-  JOIN Category c ON t.Category_ID = c.Category_ID
-  JOIN `Payee/Source` p ON t.Pay_ID = p.Pay_ID
-  JOIN Account a ON t.Account_ID = a.Account_ID
-  WHERE a.User_ID = :uid
-
-Purpose:
-  - Retrieve complete transaction records for dashboard table
-  - Convert category IDs to names (Groceries not 2)
-  - Convert payee IDs to names (Employer Inc not 5)
-  - Convert account IDs to bank names (Chase not 4)
-  - Display readable information instead of ID numbers
-
-Components Explained:
-  - SELECT: Choose which columns to display
-  - c.Name AS category_name: Rename for clarity
-  - FROM Transactions t: Main table (nicknamed "t")
-  - JOIN Category: Connect category information
-  - JOIN Payee/Source: Connect payee information
-  - JOIN Account: Connect account information
-  - WHERE a.User_ID = :uid: Only this user's transactions
-
-Example Result Row:
-  ID: 1, Date: 2026-04-29, Amount: 7000.00, Type: Deposit
-  Category: Salary, Payee: Employer Inc
-  Account: Chase Savings, Type: Savings
+FILTER & SEARCH (Above the Table)
+  - Filter by Type (Deposits, Withdrawals, or All)
+  - Filter by Category (Groceries, Rent, Salary, etc.)
+  - Filter by Account (Checking, Savings, etc.)
+  - Search box (type what you're looking for)
+  - Helps you find specific transactions
 
 
-PERFORMANCE OPTIMIZATION
-
-Indexes Created:
-
-Index 1 - idx_account_date:
-  - On columns: Account_ID, date
-  - Purpose: Speed up queries filtering by account and date range
-  - Benefit: Transactions filtered by date search 10x faster
-
-Index 2 - idx_category:
-  - On column: Category_ID
-  - Purpose: Speed up queries filtering by category
-  - Benefit: Category searches 5x faster
-
-LIMIT Clause:
-  - LIMIT 1000 prevents returning excessive rows
-  - Protects from accidental huge result sets
-  - Improves page load time
-  - Allows pagination for large datasets
-
-
-FILE STRUCTURE & ORGANIZATION
+ADDING A BANK ACCOUNT
 ================================================================================
 
-finance-tracker/
-|
-+-- login.php                 (Login page & authentication form)
-|
-+-- register.php              (Registration & account creation form)
-|
-+-- index.php                 (Main dashboard after login)
-|
-+-- add-account.php           (Form to add new bank account)
-|
-+-- add-transaction.php       (Form to add new transaction)
-|
-+-- includes/
-|   |
-|   +-- db.php                (Database connection with PDO)
-|   |
-|   +-- session.php           (Session management & authentication)
-|   |
-|   +-- header.php            (Navigation bar & layout template)
-|   |
-|   +-- footer.php            (Footer content & closing HTML)
-|
-+-- css/
-|   |
-|   +-- style.css             (Application styling & layout)
-|
-+-- js/
-|   |
-|   +-- script.js             (Client-side functionality)
-|
-+-- database/
-|   |
-|   +-- schema.sql            (Database structure & table definitions)
-|   |
-|   +-- seed.sql              (Sample data for testing)
-|
-+-- README.md                 (Project documentation)
+Your accounts are places where you keep money. You can add as many as you want:
+  - Checking account (daily spending)
+  - Savings account (saving money)
+  - Money Market account (special savings)
+
+How to Add an Account:
+
+Step 1: Click "Add Account" Button
+  - Find this in the top menu bar
+  - Takes you to the account creation form
+
+Step 2: Enter Bank Name
+  - Which bank is this account with?
+  - Examples: "Chase", "Bank of America", "Wells Fargo", "Local Credit Union"
+  - Just type the name of your actual bank
+
+Step 3: Select Account Type
+  - Choose from dropdown menu:
+    * Checking (for everyday spending)
+    * Savings (for saving money)
+    * Money Market (special type of savings)
+  - Not sure? Start with "Checking" - you can add more later
+
+Step 4: Enter Starting Balance
+  - How much money is currently in this account?
+  - Example: If you have $1,500 in the account, type "1500"
+  - Don't include the dollar sign, just the number
+  - Don't have money yet? Type "0"
+
+Step 5: Click "Add Account" Button
+  - Account is created!
+  - You'll see it listed in "Your Accounts" section below
+
+Step 6: See Your New Account
+  - It appears in the "Your Accounts" section
+  - Shows: Bank name, Type, Current balance
+  - Can add more accounts anytime
 
 
-KEY ARCHITECTURE CONCEPTS
+RECORDING A TRANSACTION
 ================================================================================
 
-MVC-INSPIRED ARCHITECTURE
+A transaction is when money moves. You deposit it (money in) or withdraw it
+(money out).
 
-Model (Data Layer):
-  - Database tables: Account_Holder, Account, Transaction, Category, Payee/Source
-  - PDO connections handle database operations
-  - SQL queries retrieve and manipulate data
+How to Add a Transaction:
 
-View (Presentation Layer):
-  - HTML files: login.php, register.php, index.php, add-account.php
-  - CSS styling in css/style.css
-  - JavaScript interactions in js/script.js
-  - User sees forms and dashboard
+Step 1: Click "+ Add Transaction" Button
+  - Big blue button on dashboard
+  - Opens the transaction form
 
-Controller (Logic Layer):
-  - PHP scripts process form submissions
-  - Validate user input
-  - Execute SQL queries through PDO
-  - Handle authentication and authorization
-  - Return results to views
+Step 2: Select Your Account
+  - Which account is this transaction for?
+  - Dropdown shows all your accounts
+  - Example: "Chase - Checking"
+  - Select the correct one
 
+Step 3: Set the Date
+  - When did this happen?
+  - Default is today's date
+  - Can change by clicking the date field
+  - Format: MM/DD/YYYY
+  - Example: "05/06/2026"
 
-NORMALIZATION (3NF - THIRD NORMAL FORM)
+Step 4: Enter the Amount
+  - How much money?
+  - Just type the number (not the dollar sign)
+  - Always use positive number (system knows if it's in or out)
+  - Examples: "50", "1500.99", "25.50"
+  - Decimals are okay (cents)
 
-Why Normalization Matters:
-  - Eliminates data duplication
-  - Reduces storage space
-  - Maintains data integrity
-  - Prevents update anomalies
+Step 5: Choose Type (Deposit or Withdrawal)
+  - Deposit = Money coming in (paycheck, gift, refund)
+  - Withdrawal = Money going out (spending, transfer, payment)
+  - Select from dropdown
+  - This changes whether money is added or subtracted
 
-Example of Normalization:
+Step 6: Pick a Category
+  - What was this for?
+  - Dropdown shows all categories:
+    * Salary (money you earned)
+    * Groceries (food shopping)
+    * Rent (housing payment)
+    * Utilities (electric, water, internet)
+    * Games (entertainment spending)
+    * Misc (miscellaneous - for stuff that doesn't fit)
+    * Transportation (gas, bus, parking)
+    * Education (school, books, courses)
+    * Dropshipping (if you sell online)
+    * Insurance (any insurance payments)
+  - Pick the one that best matches
 
-BEFORE (Denormalized - BAD):
-  Transactions table with denormalized data:
-  Transaction_ID | Account_ID | Category_Name  | Account_Type | Balance
-  1              | 50         | Salary         | Checking     | 5500.00
-  2              | 96         | Groceries      | Savings      | 3200.00
-  3              | 82         | Salary         | Checking     | 6500.00
-  
-  Problem: Category_Name and Account_Type repeated for every transaction
-  Problem: If category name changes, must update all transaction rows
-  Problem: Wastes storage space
+Step 7: Select Payee/Source
+  - Who paid you or who did you pay?
+  - Examples: "Employer Inc" (if salary), "Walmart" (if shopping), "Landlord"
+  - Dropdown shows existing payees
+  - If not listed, you can type a new one
 
-AFTER (Normalized - GOOD):
-  Transactions table with foreign keys only:
-  Transaction_ID | Account_ID | Category_ID | Pay_ID | Amount | Date
-  1              | 50         | 1           | 7      | 7000   | 2026-04-29
-  2              | 96         | 2           | 6      | 225    | 2026-01-06
-  3              | 82         | 1           | 4      | 4888   | 2026-01-16
-  
-  Category table with names:
-  Category_ID | Name      | Type
-  1           | Salary    | Income
-  2           | Groceries | Expense
-  
-  Account table with types:
-  Account_ID | Bank_Name | Account_Type | Balance
-  50         | Final     | Checking     | 5500.00
-  96         | Chase     | Savings      | 3200.00
-  82         | USA Bank  | Checking     | 6500.00
-  
-  Benefit: Store category name once, reference many times
-  Benefit: Update category in one place
-  Benefit: Save storage space
-  Benefit: Maintain data consistency
+Step 8: Optional: Add Description
+  - Write what this is about
+  - More details than category provides
+  - Examples: "Weekly groceries", "Month's rent", "Gas station fill-up"
+  - Helpful for remembering later
 
-
-DEFENSE-IN-DEPTH SECURITY MODEL
-
-Layer 1 - Database Layer:
-  - Prepared statements prevent SQL injection
-  - Parameterized queries separate code from data
-  - Indexes optimize performance
-
-Layer 2 - Application Layer:
-  - Input validation checks all user data
-  - Output encoding prevents XSS attacks
-  - CSRF tokens prevent unauthorized requests
-
-Layer 3 - Authentication Layer:
-  - Three-factor authentication requires multiple credentials
-  - Password hashing protects secrets
-  - Session management maintains secure state
-  - Authorization filters restrict data access
-
-If one layer compromised, others still protect:
-  - If SQL injection attempted, parameterized queries prevent it
-  - If CSRF token stolen, different session ID regenerates after login
-  - If password hash stolen, bcrypt makes it unusable
-  - If session cookie compromised, User_ID validation still required
+Step 9: Click "Add Transaction"
+  - Transaction is recorded!
+  - Appears in transaction table immediately
+  - Your account balance updates automatically
 
 
-FUTURE ENHANCEMENTS & ROADMAP
+FINDING YOUR TRANSACTIONS
 ================================================================================
 
-The following features are planned for future releases:
+With lots of transactions, finding one specific one can be hard. Use filters!
 
-AUTOMATION
+FILTER BY TYPE
+  - Dropdown at top of table shows: "All Types", "Deposits", "Withdrawals"
+  - Click "Deposits" to see only money coming in
+  - Click "Withdrawals" to see only money going out
+  - Click "All Types" to see everything
 
-1. Real-Time Bank API Integration
-   - Connect directly to actual bank accounts
-   - Automatically pull transactions
-   - Update balances in real-time
-   - No manual data entry required
+FILTER BY CATEGORY
+  - Another dropdown shows categories
+  - Click "Groceries" to see only grocery transactions
+  - Click "Salary" to see only paychecks
+  - Click "All Categories" to see everything
+  - Great for answering "How much did I spend on groceries?"
 
-2. Recurring Transaction Templates
-   - Auto-fill common transactions (rent, utilities, insurance)
-   - Schedule regular automatic entries
-   - Reduce manual data entry errors
-   - Never miss regular payments
+FILTER BY ACCOUNT
+  - Another dropdown shows your accounts
+  - Click "Checking" to see only checking account transactions
+  - Click "Savings" to see only savings account transactions
+  - Click "All Accounts" to see everything
 
+SEARCH BOX
+  - Type what you're looking for
+  - Searches description and payee name
+  - Example: Type "Walmart" to find all Walmart purchases
+  - Example: Type "groceries" to find grocery store visits
+  - Very useful for finding specific transactions
 
-ANALYTICS & INSIGHTS
+COMBINE FILTERS
+  - Can use multiple filters at once
+  - Example: Filter by "Groceries" AND search "Walmart"
+  - Narrows down results quickly
 
-3. Advanced Analytics Dashboard
-   - Spending trend charts over time
-   - Budget alerts when approaching category limits
-   - Year-over-year comparison analysis
-   - Identify highest spending categories
-
-4. Financial Recommendations Engine
-   - Analyze spending patterns
-   - Identify areas to reduce spending
-   - Suggest budget adjustments
-   - Track progress toward financial goals
-
-
-SECURITY ENHANCEMENTS
-
-5. Audit Logging System
-   - Track all login attempts (success and failures)
-   - Log suspicious account activity
-   - Record all user actions
-   - Compliance with financial regulations
-
-6. Rate Limiting & Account Lockout
-   - Prevent brute-force password attacks
-   - Lock account after multiple failed attempts
-   - Send security alerts to user
-   - Temporary cooldown period
+CLEAR FILTERS
+  - Click "All Types", "All Categories", "All Accounts"
+  - Clear search box
+  - See all transactions again
 
 
-DATA MANAGEMENT
-
-7. Data Export Features
-   - Generate transaction reports as CSV
-   - Export data as PDF reports
-   - Download custom date ranges
-   - Share with accountants or advisors
-
-8. Automated Backup System
-   - Monthly automatic database backups
-   - Data recovery if transactions deleted
-   - Disaster recovery plan
-   - HIPAA/PCI compliance
-
-
-ADDITIONAL FEATURES
-
-9. Two-Factor Authentication via SMS
-   - Send verification codes to phone
-   - Additional security beyond password
-   - Emergency recovery codes
-   - Optional but recommended
-
-10. Transaction Tagging & Notes
-    - Add custom tags to transactions
-    - Write detailed notes per transaction
-    - Search by custom tags
-    - Better organization than categories alone
-
-
-TROUBLESHOOTING GUIDE
+YOUR ACCOUNT SAFETY - WHY WE PROTECT YOUR DATA
 ================================================================================
 
-PROBLEM: "Invalid email or phone number" error on login
+Why Does This Matter?
 
-Possible Causes:
-  - Email address doesn't exist in database
+Your financial information is private and sensitive. We protect it because:
+  - Hackers want to steal financial information
+  - Your transactions show spending patterns
+  - Your passwords protect everything
+  - Your data belongs only to you
+
+
+HOW WE PROTECT YOUR DATA
+
+Three Passwords (Three-Factor Authentication):
+  - You need three things to log in:
+    1. Your email
+    2. Your phone number
+    3. Your password
+  - Even if someone knows your email, they still need the other two
+  - Makes it very hard for hackers to break in
+  - Like a lock with three different keys
+
+Password Protection (Bcrypt):
+  - Your password is scrambled using special math
+  - Scrambled so badly it can't be unscrambled
+  - Even if hackers steal the database, they can't read passwords
+  - Takes computer ~100 milliseconds to scramble (too slow to brute-force)
+
+Secret Forms (CSRF Protection):
+  - Every form has a hidden secret code
+  - Code only works for you, only once
+  - Hackers can't submit forms pretending to be you
+  - Like a secret handshake only you know
+
+Data Checking (Input Validation):
+  - We check everything you type is correct
+  - Wrong formats get rejected before saved
+  - Prevents bad data from sneaking in
+  - Like a bouncer checking IDs at a door
+
+Only Your Data (Authorization):
+  - You can only see your own accounts and transactions
+  - You can't see anyone else's data
+  - Database prevents mixing up accounts
+  - Each person's data is separate and locked
+
+
+LOGGING OUT - END YOUR SESSION
+================================================================================
+
+Always log out when done! Especially on shared computers.
+
+How to Log Out:
+
+Step 1: Look at Top Right Corner
+  - See your name with a dropdown arrow
+  - Example: "Sarah Johnson ▼"
+
+Step 2: Click Your Name
+  - Dropdown menu appears with options
+
+Step 3: Click "Logout"
+  - Session ends immediately
+  - Redirected to login page
+  - All cookies cleared from browser
+
+IMPORTANT: Sessions Auto-Expire
+  - If you're inactive for 30 minutes, you're logged out
+  - Don't worry - you'll be sent to login page
+  - Just log in again to continue
+  - All your data is safe
+
+
+COMMON QUESTIONS & ANSWERS
+================================================================================
+
+Q: Can I change my password?
+A: Not yet in this version. Make it a good one! Write it down somewhere safe.
+
+Q: I forgot my password. What do I do?
+A: Contact your instructor. In a real app, there'd be a "Forgot Password" button.
+
+Q: Can I have multiple accounts (checking, savings, etc.)?
+A: Yes! Add as many as you want. Each tracks separately.
+
+Q: What if I make a mistake entering a transaction?
+A: In this version, you'd need to contact the admin. Future versions will have 
+   an edit/delete button.
+
+Q: How much money can I store?
+A: No limit! Accounts can hold any amount.
+
+Q: Can I see other people's transactions?
+A: No! The database prevents this. You only see your own data.
+
+Q: Is this connected to my real bank account?
+A: No. This is a practice app. You manually enter transactions. (Future: real 
+   bank connection coming!)
+
+Q: How long do I have to enter a transaction?
+A: Enter it anytime! Can be days later. Backdate to correct date.
+
+Q: What if I want to download my data?
+A: Future version! Coming soon.
+
+Q: Is my data safe?
+A: Yes! We use industry-standard security (bcrypt, prepared statements, CSRF 
+   tokens, etc.)
+
+
+WHAT EACH CATEGORY MEANS
+================================================================================
+
+Here's what to put in each category:
+
+SALARY (INCOME)
+  - Money you earned from a job
+  - Paychecks
+  - Bonus money
+  - Any money you're paid for work
+
+GROCERIES (EXPENSE)
+  - Food shopping at supermarket
+  - Grocery stores
+  - Food purchases
+
+RENT (EXPENSE)
+  - Monthly rent payment to landlord
+  - Housing costs
+
+UTILITIES (EXPENSE)
+  - Electric bill
+  - Water bill
+  - Internet/phone bill
+  - Gas bill
+  - Any home service payments
+
+TRANSPORTATION (EXPENSE)
+  - Gas station fill-ups
+  - Bus passes
+  - Parking fees
+  - Car payments
+  - Uber/Lyft rides
+
+GAMES (EXPENSE)
+  - Video game purchases
+  - Gaming subscriptions
+  - Entertainment
+  - Fun spending
+
+DROPSHIPPING (INCOME)
+  - If you sell items online
+  - Money from sales
+
+MISCELLANEOUS (EXPENSE)
+  - Anything that doesn't fit other categories
+  - Clothes, gifts, random spending
+
+EDUCATION (EXPENSE)
+  - School tuition
+  - Book purchases
+  - Course fees
+  - Learning materials
+
+INSURANCE (EXPENSE)
+  - Car insurance
+  - Health insurance
+  - Any insurance payments
+
+
+THINGS TO TRY - GET COMFORTABLE WITH THE APP
+================================================================================
+
+Now that you know the basics, try these things:
+
+Exercise 1: Add Multiple Accounts
+  1. Create a "Checking" account with $1,000 starting balance
+  2. Create a "Savings" account with $500 starting balance
+  3. See both accounts listed in "Your Accounts"
+  4. Practice switching between them
+
+Exercise 2: Record Your First Transaction
+  1. Click "+ Add Transaction"
+  2. Select Checking account
+  3. Use today's date
+  4. Add deposit: Amount $2,000 (imagine a paycheck)
+  5. Category: Salary
+  6. Payee: Your Employer
+  7. Watch your balance update!
+
+Exercise 3: Record Several Transactions
+  1. Add a withdrawal: $100 for Groceries (Walmart)
+  2. Add a withdrawal: $50 for Gas (Shell Gas Station)
+  3. Add a withdrawal: $1,200 for Rent (Landlord)
+  4. Watch your balance go down as you add them
+
+Exercise 4: Use Filters
+  1. Click "Deposits" filter - see only money in
+  2. Click "Withdrawals" filter - see only money out
+  3. Click "All Types" - see everything again
+  4. Try filtering by different categories
+
+Exercise 5: Search for Transactions
+  1. In search box, type "Walmart"
+  2. See only Walmart transactions
+  3. Clear search box
+  4. Type "Salary" - see all salary transactions
+
+Exercise 6: Check Your Summary Cards
+  1. Look at Total Deposits (should be $2,000)
+  2. Look at Total Withdrawals (should be $1,350)
+  3. Look at Net Position (should be $650)
+  4. Add more transactions and watch numbers change
+
+
+LEARNING MORE - WHERE TO GO NEXT
+================================================================================
+
+Want to understand what's happening behind the scenes?
+
+Technical Details:
+  - Read the full Project Report (if you want deep details)
+  - Report has sections on database design, security, optimization
+  - Understanding how databases work is cool!
+
+How the Security Works:
+  - See "Account Safety" section above
+  - Prepared statements prevent hacking
+  - Password hashing protects privacy
+  - Three-factor authentication stops unauthorized access
+
+Future Features to Look Forward To:
+  - Automatic bank connection (pull real transactions)
+  - Spending analytics (see trends in your spending)
+  - Budget alerts (warning when you overspend)
+  - Export reports (download your data)
+  - Mobile app (use on your phone)
+
+
+TROUBLESHOOTING - WHAT TO DO IF SOMETHING BREAKS
+================================================================================
+
+PROBLEM: "Invalid email or phone number"
+
+What This Means:
+  - Email doesn't exist in database
   - Phone number doesn't exist in database
-  - Email/phone combination doesn't match
+  - Or, they don't match (aren't from same account)
 
-Solutions:
-  1. Check email address is spelled correctly
-  2. Check phone number is complete and correct
-  3. Verify both email and phone belong to same account
-  4. Use registration page if account doesn't exist
-  5. Contact administrator if account locked
-
-
-PROBLEM: "Database connection failed" error
-
-Possible Causes:
-  - Database credentials incorrect in db.php
-  - MySQL server not running
-  - Database user lacks permissions
-  - Network connectivity issue
-
-Solutions:
-  1. Verify db.php has correct host, username, password
-  2. Check MySQL service is running
-  3. Confirm database user created with proper permissions
-  4. Test network connection to database server
-  5. Contact hosting provider if connection fails
-  
-  Test Connection Script:
-    <?php
-    try {
-        $pdo = new PDO(
-            'mysql:host=localhost;dbname=finance',
-            'user',
-            'password'
-        );
-        echo "Connected successfully";
-    } catch (PDOException $e) {
-        echo "Connection failed: " . $e->getMessage();
-    }
-    ?>
+What to Do:
+  1. Check you typed email correctly (no typos!)
+  2. Check you typed phone number correctly
+  3. Check they belong to same account
+  4. If account doesn't exist, click "Create Account"
+  5. If still stuck, ask your instructor
 
 
-PROBLEM: "Session expired" message after logging in
+PROBLEM: "Database connection failed"
 
-Possible Causes:
-  - 30 minutes of inactivity passed
-  - Browser cookies cleared
-  - Session stored on server but lost
-  - Cache issues
+What This Means:
+  - Can't reach the database server
+  - Database is down or not responding
+  - Settings are wrong
 
-Solutions:
-  1. Log in again by going to login.php
-  2. Clear browser cache and cookies
-  3. Try different browser or incognito mode
-  4. Check browser allows cookies
-  5. Verify server session storage working
-  
-  To Prevent:
-    - Keep browser active (move mouse, interact)
-    - Don't clear cookies while using application
-    - Use same browser for entire session
+What to Do:
+  1. Refresh the page (F5 key)
+  2. Wait 30 seconds and try again
+  3. Check your internet connection
+  4. Try a different browser
+  5. If still down, database is having issues - wait and try again
 
 
-PROBLEM: Transactions not showing in table
+PROBLEM: "Session expired"
 
-Possible Causes:
-  - Transaction added to wrong account
-  - Date filter excludes transactions
-  - Category filter applied incorrectly
-  - Search term doesn't match
+What This Means:
+  - You were inactive for 30 minutes
+  - Browser closed cookies
+  - Session was cleared
 
-Solutions:
-  1. Verify viewing correct account (check filter)
-  2. Check date range includes transaction date
-  3. Remove all filters to see all transactions
-  4. Clear search box (may filter out results)
-  5. Refresh browser (F5)
-  6. Check transaction was actually saved (look at balance)
-  
-  Debug Steps:
-    1. Remove all filters ("All Types", "All Categories")
-    2. Check account balance changed after add
-    3. If balance changed, transaction saved
-    4. If transaction still missing, contact admin
+What to Do:
+  1. Go back to login page
+  2. Log in with your email, phone, and password
+  3. You'll be back in the app
+  4. To prevent: Keep using the app (don't leave idle for 30+ min)
 
 
-PERFORMANCE METRICS & BENCHMARKS
+PROBLEM: "Transactions not showing in my table"
+
+What This Means:
+  - Transactions were added but you can't see them
+  - Usually a filter issue
+  - Or transaction might be in different account
+
+What to Do:
+  1. Check your filters (click "All Types", "All Categories", "All Accounts")
+  2. Clear search box
+  3. Refresh page (F5)
+  4. Check you're looking at correct account
+  5. If balance changed, transaction was saved (just hidden by filter)
+  6. If balance didn't change, transaction wasn't saved
+
+
+PROBLEM: "Can't log in"
+
+What This Means:
+  - Account info doesn't match database
+  - Typo in email, phone, or password
+  - Account not created yet
+
+What to Do:
+  1. Double-check email is spelled correctly
+  2. Double-check phone number is correct
+  3. Double-check password (passwords are case-sensitive)
+  4. Try copying/pasting to avoid typos
+  5. If account doesn't exist, create it first
+  6. If still stuck, ask instructor for help
+
+
+PERFORMANCE & SPEED
 ================================================================================
 
-Page Load Times
-  - Login page: < 100ms
-  - Dashboard: < 200ms (initial load)
-  - Add transaction form: < 150ms
-  - Transaction search/filter: < 300ms
+Speed Expectations:
 
-Database Query Performance
-  - Authentication query: < 10ms
-  - Deposit total calculation: < 20ms
-  - Transaction history with joins: < 50ms
-  - Category filter: < 30ms
+Pages Should Load In:
+  - Login page: Under 1 second
+  - Dashboard: 1-2 seconds
+  - Forms: 1 second
+  - Filters/searches: 1-2 seconds
 
-Scalability
-  - Concurrent users supported: 100+
-  - Transactions per account: Unlimited
-  - Database size with sample data: ~50MB
-  - Growth rate: ~1MB per 10,000 transactions
+Why It Matters:
+  - Slow apps are frustrating
+  - We optimized the database with indexes
+  - Speeds up finding transactions
+  - Handles hundreds of transactions smoothly
 
-Browser Compatibility
-  - Chrome: Fully supported (latest 2 versions)
-  - Firefox: Fully supported (latest 2 versions)
-  - Safari: Fully supported (latest 2 versions)
-  - Edge: Fully supported (latest 2 versions)
-  - Mobile browsers: Fully supported (iOS Safari, Chrome Android)
+If It's Slow:
+  - Check your internet connection
+  - Try refreshing the page
+  - Close other browser tabs
+  - Contact instructor if consistently slow
 
 
-COMPLIANCE & SECURITY STANDARDS
+PROTECTING YOUR ACCOUNT - BEST PRACTICES
 ================================================================================
 
-OWASP TOP 10 COMPLIANCE
+Your Responsibilities:
 
-A01:2021 Broken Access Control
-  Status: MITIGATED
-  Method: User_ID filtering, authorization checks
+Keep Your Password Secret
+  - Don't tell anyone your password
+  - Don't write it on a sticky note on your monitor
+  - Don't save it in an email
+  - Write it down somewhere secure (safe, locked drawer)
 
-A02:2021 Cryptographic Failures
-  Status: MITIGATED
-  Method: Bcrypt password hashing, HTTPS (on production)
+Use a Strong Password
+  - Mix letters, numbers, and symbols
+  - Longer passwords are better
+  - Avoid common words or dates
+  - Examples:
+    WEAK: "password123" (too common)
+    STRONG: "Tr0pic@lM0nkey42!" (letters, numbers, symbols, random)
 
-A03:2021 Injection
-  Status: MITIGATED
-  Method: Prepared statements, parameterized queries
+Change Accounts Regularly
+  - If shared computer, always log out
+  - Don't stay logged in overnight
+  - Session auto-expires after 30 minutes anyway
 
-A04:2021 Insecure Design
-  Status: MITIGATED
-  Method: Threat modeling, secure architecture
+Be Careful on Public WiFi
+  - Using public WiFi at coffee shop? Be extra careful
+  - In real apps (not this practice one), use VPN
+  - This practice app is for learning, not real finances
 
-A05:2021 Security Misconfiguration
-  Status: MITIGATED
-  Method: Secure defaults, environment variables
+Verify Your Email & Phone
+  - Make sure you typed them correctly
+  - Can't change them later in this version
+  - Important for future password recovery
 
-A06:2021 Vulnerable and Outdated Components
-  Status: MONITORED
-  Method: Regular updates, dependency checking
-
-A07:2021 Authentication Failures
-  Status: MITIGATED
-  Method: Three-factor authentication, session management
-
-A08:2021 Software and Data Integrity Failures
-  Status: MITIGATED
-  Method: Input validation, CSRF tokens
-
-A09:2021 Logging and Monitoring Failures
-  Status: PARTIAL
-  Method: Error logging, future: audit trails
-
-A10:2021 Server-Side Request Forgery
-  Status: MITIGATED
-  Method: URL validation, restricted endpoints
+Don't Click Suspicious Links
+  - If someone sends you a "login" link, be suspicious
+  - Always go to official website directly
+  - Don't click email links that ask you to "verify" account
 
 
-PASSWORD SECURITY STANDARDS
-
-NIST Digital Identity Guidelines:
-  - Minimum length: 8 characters (our requirement)
-  - No complexity rules required (NIST removed this)
-  - Check against known breach databases
-  - Support for passphrases (spaces allowed)
-
-Bcrypt Implementation:
-  - Cost parameter: 12 (NIST recommended)
-  - Hashing time: ~100ms (good balance)
-  - Adaptive: Cost can increase as computers get faster
-  - Salt: Automatically generated and included
-
-
-DATA PROTECTION STANDARDS
-
-ISO/IEC 27001 (Information Security Management):
-  - Access control implementation
-  - Encryption of sensitive data
-  - Incident management procedures
-  - Risk assessment methodology
-
-PCI DSS Compliance (Payment Card Industry):
-  - Secure network architecture
-  - Cardholder data protection
-  - Vulnerability management
-  - Access control and monitoring
-
-GDPR Compliance (General Data Protection Regulation):
-  - User data privacy
-  - Right to be forgotten
-  - Data portability
-  - Privacy by design
-
-
-
-LICENSE & PROJECT INFORMATION
+WHAT EACH BUTTON DOES
 ================================================================================
 
-Educational Use License
+MAIN NAVIGATION (Top Menu)
 
-This project is part of the University of Rhode Island Computer Science 
-program (CSC 436: Database Management). All code, documentation, and database 
-schema are the property of the institution and may be used for educational 
-purposes.
+"Dashboard"
+  - Takes you to main page with summary and transactions
+  - Shows all your accounts and spending
+  - Click this to go home
 
-Restrictions:
-  - Not for commercial use without explicit permission
-  - Must maintain attribution to project authors
-  - Source code must remain available
-  - Modifications must be documented
+"Add Account"
+  - Form to create new checking, savings, or money market account
+  - Shows all your existing accounts below form
+  - Use to link more banks
 
-Institution: University of Rhode Island
-Course: CSC 436 - Database Management
-Course Description: Database design, SQL, normalization, application development
-Project Date: May 2026
-Duration: Full semester project
+"Your Name" (Top Right)
+  - Dropdown menu with your name
+  - Shows logout option
+  - Click to see menu
 
-Instructor:
-  - Database Management course instructor: Samantha Armenti
+"Logout"
+  - Ends your session
+  - Logs you out of the app
+  - Clears your cookies
 
 
+ON THE DASHBOARD
 
-VERSION HISTORY
+"+ Add Transaction"
+  - Blue button
+  - Opens form to record new transaction
+  - Use whenever you spend or receive money
+
+"All Types"
+  - Dropdown showing Deposits, Withdrawals, All Types
+  - Filters transaction table
+  - Shows only money in, only money out, or all
+
+"All Categories"
+  - Dropdown showing Salary, Groceries, Rent, etc.
+  - Filters by spending category
+  - Shows only transactions from selected category
+
+"All Accounts"
+  - Dropdown showing each account
+  - Filters by account
+  - Shows only transactions from selected account
+
+"Search Box"
+  - Type what you're looking for
+  - Searches description and payee name
+  - Type "Walmart" to find all Walmart purchases
+
+
+ON THE ADD ACCOUNT PAGE
+
+"Add Account"
+  - Green/blue button at bottom
+  - Creates new account with info you entered
+  - Account appears in "Your Accounts" section
+
+
+ON THE ADD TRANSACTION PAGE
+
+"Add Transaction"
+  - Creates new transaction
+  - Updates account balance
+  - Appears in dashboard table
+
+"Cancel"
+  - Closes form without saving
+  - Takes you back to dashboard
+  - Nothing is saved
+
+
+FINALLY - YOU'VE GOT THIS!
 ================================================================================
 
-Version 1.0 - May 6, 2026
-  Initial Release
-  - Complete application with all core features
-  - Full security implementation (prepared statements, password hashing, CSRF)
-  - Database design with 3NF normalization
-  - Performance optimization with indexes
-  - Complete test dataset
-  - Full documentation and README
-  
-  Features Included:
-    * User registration and three-factor authentication
-    * Multi-account management (Checking, Savings, Money Market)
-    * Transaction tracking with automatic balance updates
-    * Category-based organization (10 categories)
-    * Dashboard with summary cards and transaction history
-    * Advanced filtering and search capabilities
-    * Comprehensive security at all layers
-    * SQL injection and XSS prevention
-    * CSRF protection
-    * Bcrypt password hashing with cost 12
-    * Session management with regeneration
-    * User_ID authorization filtering
-    * Database indexes for performance
-    * Complete error handling
-  
-  Known Limitations:
-    * Manual transaction entry only (future: API integration)
-    * No audit logging (future: implement)
-    * No SMS 2FA (future: implement)
-    * No data export (future: implement)
+You now know how to:
+  ✓ Create your account
+  ✓ Log in securely
+  ✓ Add bank accounts
+  ✓ Record transactions
+  ✓ Filter and search
+  ✓ Understand your spending
+  ✓ Keep your account safe
 
+This is a learning project, so:
+  - Don't worry about making mistakes
+  - Experiment and try things
+  - Ask questions if confused
+  - Tell instructor if you find bugs
+  - Have fun tracking your money!
+
+Future versions will have:
+  - Real bank connections (automatic importing)
+  - Spending reports and charts
+  - Budget alerts
+  - Download your data
+  - Mobile phone app
+  - And more!
+
+For now, use this app to understand how databases work and how security
+protects your personal information.
+
+Questions? Ask your instructor!
+Have bugs to report? Let your instructor know!
+Want to learn more? Read the full project report!
+
+
+================================================================================
+                    CONGRATULATIONS! YOU'RE READY TO USE THE APP
+================================================================================
+
+You've learned everything needed to start using Finance Tracker. 
+
+Take the first step:
+  1. Go to https://ajibanez.rhody.dev/financetracker/login.php
+  2. Click "Create Account"
+  3. Fill in your information
+  4. Start tracking your money!
+
+Remember: This is a learning tool. Have fun exploring, and don't hesitate to 
+ask your instructor if you get stuck.
+
+Happy tracking!
+
+
+================================================================================
+                              QUICK REFERENCE
+================================================================================
+
+FORGOT SOMETHING? HERE'S A QUICK REMINDER:
+
+What to Do First:
+  1. Create account (email, phone, password)
+  2. Log in (email, phone, password)
+  3. Add a bank account
+  4. Start recording transactions
+
+How to Record Money:
+  Deposit (Money In): Type amount, choose "Deposit", pick category
+  Withdrawal (Money Out): Type amount, choose "Withdrawal", pick category
+
+How to Find a Transaction:
+  Use filters: Type, Category, Account
+  Use search: Type what you remember about it
+
+How to Protect Your Account:
+  Keep password secret
+  Never share email or phone
+  Always log out when done
+  Use strong password
+
+If Something Breaks:
+  Check your filters
+  Refresh the page
+  Log out and log back in
+  Ask your instructor
+
+Still stuck? Ask for help!
 
 ================================================================================
